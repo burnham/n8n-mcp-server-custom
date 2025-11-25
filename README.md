@@ -41,11 +41,11 @@ We built this implementation from scratch, replicating the functionality of the 
 
 ### 📸 Result in Action
 
-![Workflow created with MCP](assets/workflow-example.png)
-_Workflow #76 created automatically, with the tag "🛠️ Antigravity MCP" attached._
+![n8n Workflow Editor](assets/n8n-workflow-editor.png)
+_Test workflow visible in n8n editor showing Manual Trigger and Set Data nodes._
 
-![Tools Overview](assets/tools-creation.png)
-_All 27 MCP tools listed by the `list-tools` script._
+![Antigravity MCP Tools](assets/antigravity-mcp-tools.png)
+_All 27 MCP tools available in Antigravity's MCP server management panel._
 
 ### 🚀 Quick Start
 
@@ -192,6 +192,14 @@ Esta implementación personalizada fue construida desde cero, replicando la func
 - 📦 **TypeScript** - Base de código type-safe y mantenible
 - 🚀 **Configuración Fácil** - Clona, configura y ejecuta en minutos
 - 🔗 **Paridad de Funciones** - Implementa funcionalidad esencial del [servidor oficial](https://github.com/modelcontextprotocol/servers/tree/main/src/n8n)
+
+### 📸 Resultado en Acción
+
+![Editor de Workflow n8n](assets/n8n-workflow-editor.png)
+_Workflow de prueba visible en el editor de n8n mostrando los nodos Manual Trigger y Set Data._
+
+![Herramientas MCP en Antigravity](assets/antigravity-mcp-tools.png)
+_Las 27 herramientas MCP disponibles en el panel de gestión de servidores MCP de Antigravity._
 
 ### 🚀 Inicio Rápido
 
