@@ -34,7 +34,9 @@ export class N8nClient {
 
     const contentType = response.headers.get("content-type") || "";
     if (contentType.includes("application/json")) {
-      return response.json();
+      const json = await response.json();
+      // API v1 wraps responses in a .data property
+      return json.data || json;
     }
 
     return response.text();
@@ -42,46 +44,46 @@ export class N8nClient {
 
   // Información general de la instancia
   async getInstanceInfo() {
-    return this.request("/rest/health");
+    return this.request("/api/v1/health");
   }
 
   async getInstanceVersion() {
-    return this.request("/rest/settings");
+    return this.request("/api/v1/settings");
   }
 
   // Workflows
   async listWorkflows() {
-    return this.request("/rest/workflows");
+    return this.request("/api/v1/workflows");
   }
 
   async getWorkflow(id: string) {
-    return this.request(`/rest/workflows/${encodeURIComponent(id)}`);
+    return this.request(`/api/v1/workflows/${encodeURIComponent(id)}`);
   }
 
   async createWorkflow(data: any) {
-    return this.request("/rest/workflows", {
+    return this.request("/api/v1/workflows", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
   async updateWorkflow(id: string, data: any) {
-    return this.request(`/rest/workflows/${encodeURIComponent(id)}`, {
+    return this.request(`/api/v1/workflows/${encodeURIComponent(id)}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     });
   }
 
   async deleteWorkflow(id: string) {
-    return this.request(`/rest/workflows/${encodeURIComponent(id)}`, {
+    return this.request(`/api/v1/workflows/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
   }
 
   async executeWorkflow(id: string, data: any = {}) {
-    return this.request(`/rest/workflows/run/${encodeURIComponent(id)}`, {
+    return this.request(`/api/v1/workflows/${encodeURIComponent(id)}/execute`, {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify({ data }),
     });
   }
 
@@ -92,15 +94,15 @@ export class N8nClient {
     if (params.lastId != null) query.set("lastId", params.lastId);
 
     const suffix = query.toString() ? `?${query.toString()}` : "";
-    return this.request(`/rest/executions${suffix}`);
+    return this.request(`/api/v1/executions${suffix}`);
   }
 
   async getExecution(id: string) {
-    return this.request(`/rest/executions/${encodeURIComponent(id)}`);
+    return this.request(`/api/v1/executions/${encodeURIComponent(id)}`);
   }
 
   async stopExecution(id: string) {
-    return this.request(`/rest/executions/${encodeURIComponent(id)}`, {
+    return this.request(`/api/v1/executions/${encodeURIComponent(id)}`, {
       method: "POST",
       body: JSON.stringify({ stop: true }),
     });
@@ -108,73 +110,80 @@ export class N8nClient {
 
   // Tags
   async listTags() {
-    return this.request("/rest/tags");
+    return this.request("/api/v1/tags");
+  }
+
+  async createTag(data: { name: string }) {
+    return this.request("/api/v1/tags", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   }
 
   // Credenciales
   async listCredentials() {
-    return this.request("/rest/credentials");
+    return this.request("/api/v1/credentials");
   }
 
   async getCredential(id: string) {
-    return this.request(`/rest/credentials/${encodeURIComponent(id)}`);
+    return this.request(`/api/v1/credentials/${encodeURIComponent(id)}`);
   }
 
   async createCredential(data: any) {
-    return this.request("/rest/credentials", {
+    return this.request("/api/v1/credentials", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
   async updateCredential(id: string, data: any) {
-    return this.request(`/rest/credentials/${encodeURIComponent(id)}`, {
+    return this.request(`/api/v1/credentials/${encodeURIComponent(id)}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     });
   }
 
   async deleteCredential(id: string) {
-    return this.request(`/rest/credentials/${encodeURIComponent(id)}`, {
+    return this.request(`/api/v1/credentials/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
   }
 
   // Node types
   async listNodeTypes() {
-    return this.request("/rest/node-types");
+    return this.request("/api/v1/node-types");
   }
 
   async getNodeType(name: string) {
-    const types = await this.request("/rest/node-types");
+    const types = await this.request("/api/v1/node-types");
     return types.find((t: any) => t.name === name);
   }
 
   // Variables
   async listVariables() {
-    return this.request("/rest/variables");
+    return this.request("/api/v1/variables");
   }
 
   async getVariable(id: string) {
-    return this.request(`/rest/variables/${encodeURIComponent(id)}`);
+    return this.request(`/api/v1/variables/${encodeURIComponent(id)}`);
   }
 
   async createVariable(data: { key: string; value: string; type?: string }) {
-    return this.request("/rest/variables", {
+    return this.request("/api/v1/variables", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
   async updateVariable(id: string, data: { key?: string; value?: string; type?: string }) {
-    return this.request(`/rest/variables/${encodeURIComponent(id)}`, {
+    return this.request(`/api/v1/variables/${encodeURIComponent(id)}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     });
   }
 
   async deleteVariable(id: string) {
-    return this.request(`/rest/variables/${encodeURIComponent(id)}`, {
+    return this.request(`/api/v1/variables/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
   }
@@ -188,16 +197,24 @@ export class N8nClient {
     return this.updateWorkflow(id, { active: false });
   }
 
+  // Test connection
+  async testConnection(): Promise<boolean> {
+    try {
+      await this.listWorkflows();
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   // Self-test
   async selfTest() {
     try {
-      const health = await this.getInstanceInfo();
       const workflows = await this.listWorkflows();
       return {
         status: "ok",
         message: "Connection successful",
         details: {
-          health,
           workflowCount: Array.isArray(workflows) ? workflows.length : 0,
         },
       };

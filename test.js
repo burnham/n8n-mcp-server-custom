@@ -32,11 +32,28 @@ async function runTests() {
   try {
     // Test 1: Connection
     console.log('📡 Testing connection...');
-    const isConnected = await client.testConnection();
-    if (isConnected) {
-      console.log('✅ Connection successful!');
-    } else {
-      console.log('❌ Connection failed');
+    try {
+      const isConnected = await client.testConnection();
+      console.log('DEBUG: testConnection returned:', isConnected);
+      if (isConnected) {
+        console.log('✅ Connection successful!');
+      } else {
+        console.log('❌ Connection failed - testConnection returned false');
+        
+        // Try manual test
+        console.log('\n🔍 Attempting manual workflow list...');
+        try {
+          const workflows = await client.listWorkflows();
+          console.log('✅ Manual test succeeded! Found', workflows.length, 'workflows');
+        } catch (manualError) {
+          console.log('❌ Manual test also failed:', manualError.message);
+        }
+        return;
+      }
+    } catch (connError) {
+      console.log('❌ Connection failed with error:');
+      console.log('   ', connError.message);
+      console.log('Full error:', connError);
       return;
     }
     console.log('');
